@@ -269,8 +269,10 @@ export const apiClient = new ApiClient(API_BASE_URL);
 export const getProfiles = (filters?: { gender?: string; city?: string; country?: string }) =>
   apiClient.getProfiles(filters);
 
+
 export const getProfileBySlug = (slug: string) =>
   apiClient.getProfileBySlug(slug);
+
 
 export const createProfile = (data: {
   name: string;
