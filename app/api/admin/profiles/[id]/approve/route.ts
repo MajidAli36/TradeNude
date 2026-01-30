@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { updateProfileStatus } from "../../../../../../lib/server-profiles";
 import { validateAdminRequest } from "../../../utils";
 
+export const dynamic = "force-dynamic";
+
 interface Params {
   params: Promise<{
     id: string;
@@ -9,19 +11,27 @@ interface Params {
 }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
-  const authError = validateAdminRequest(req);
-  if (authError) return authError;
+  try {
+    const authError = validateAdminRequest(req);
+    if (authError) return authError;
 
-  const { id } = await params;
+    const { id } = await params;
 
-  const profile = await updateProfileStatus(id, "approved");
-  if (!profile) {
+    const profile = await updateProfileStatus(id, "approved");
+    if (!profile) {
+      return NextResponse.json(
+        { error: "Profile not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ profile });
+  } catch (error: any) {
+    console.error("Error in PATCH /api/admin/profiles/[id]/approve:", error);
     return NextResponse.json(
-      { error: "Profile not found" },
-      { status: 404 }
+      { error: error.message || "Failed to approve profile" },
+      { status: 500 }
     );
   }
-
-  return NextResponse.json({ profile });
 }
 

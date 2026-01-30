@@ -1,6 +1,6 @@
 import { Profile, Status } from "./../types";
 import { generateSlug } from "./storage";
-import { supabase } from "./supabase";
+import { getSupabaseClient } from "./supabase";
 
 const PROFILE_IMAGES_BUCKET = "profile-images";
 
@@ -29,6 +29,7 @@ export async function listPublicProfiles(filters?: {
   city?: string;
   country?: string;
 }): Promise<Profile[]> {
+  const supabase = getSupabaseClient();
   let query = supabase
     .from("profiles")
     .select("*")
@@ -56,6 +57,7 @@ export async function listPublicProfiles(filters?: {
 }
 
 export async function findProfileBySlug(slug: string): Promise<Profile | null> {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from("profiles")
     .select("*")
@@ -134,6 +136,7 @@ export async function createProfileFromFormData(
     } else if (entry instanceof File) {
       // Upload file to Supabase Storage and store the public URL
       const file = entry as File;
+      const supabase = getSupabaseClient();
       const ext =
         file.name && file.name.includes(".")
           ? file.name.split(".").pop()
@@ -170,6 +173,7 @@ export async function createProfileFromFormData(
 
   const now = new Date().toISOString();
   const slug = await generateUniqueSlug(name);
+  const supabase = getSupabaseClient();
 
   const { data, error } = await supabase
     .from("profiles")
@@ -209,6 +213,7 @@ export async function createProfileFromFormData(
 }
 
 export async function listAdminProfiles(status: Status): Promise<Profile[]> {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from("profiles")
     .select("*")
@@ -227,6 +232,7 @@ export async function updateProfileStatus(
   id: string,
   status: Status
 ): Promise<Profile | null> {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from("profiles")
     .update({ status })
@@ -244,6 +250,7 @@ export async function updateProfileStatus(
 }
 
 export async function deleteProfileById(id: string): Promise<boolean> {
+  const supabase = getSupabaseClient();
   const { error } = await supabase.from("profiles").delete().eq("id", id);
 
   if (error) {
@@ -258,6 +265,7 @@ async function generateUniqueSlug(name: string): Promise<string> {
   const base = generateSlug(name);
   let slug = base;
   let counter = 1;
+  const supabase = getSupabaseClient();
 
   while (true) {
     const { data, error } = await supabase
