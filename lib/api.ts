@@ -280,6 +280,9 @@ export const createProfile = (data: {
   city: string;
   description: string;
   email?: string;
+  telegram_username?: string;
+  discord_username?: string;
+  tags?: string[];
   images: File[] | string[];
 }) => apiClient.createProfile(data);
 
