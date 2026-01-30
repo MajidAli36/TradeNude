@@ -104,6 +104,7 @@ class ApiClient {
    */
   async createProfile(data: {
     name: string;
+    title?: string;
     gender: string;
     age?: string | number;
     country?: string;
@@ -114,6 +115,7 @@ class ApiClient {
     discord_username?: string;
     tags?: string[];
     images: File[] | string[];
+    _slugSource?: string;
   }): Promise<Profile> {
     const formData = new FormData();
     
@@ -122,6 +124,12 @@ class ApiClient {
     formData.append("city", data.city);
     formData.append("description", data.description);
     
+    if (data.title) {
+      formData.append("title", data.title);
+    }
+    if (data._slugSource) {
+      formData.append("_slugSource", data._slugSource);
+    }
     if (data.age) {
       formData.append("age", String(data.age));
     }
@@ -274,6 +282,7 @@ export const getProfileBySlug = (slug: string) =>
 
 export const createProfile = (data: {
   name: string;
+  title?: string;
   gender: string;
   age?: string | number;
   country?: string;
@@ -284,6 +293,7 @@ export const createProfile = (data: {
   discord_username?: string;
   tags?: string[];
   images: File[] | string[];
+  _slugSource?: string;
 }) => apiClient.createProfile(data);
 
 export const getAdminProfiles = (status?: Status) =>

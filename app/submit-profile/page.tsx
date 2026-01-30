@@ -15,6 +15,7 @@ export default function SubmitProfilePage() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     name: "",
+    title: "",
     gender: "",
     age: "",
     country: "",
@@ -38,9 +39,21 @@ export default function SubmitProfilePage() {
         .map(t => t.trim())
         .filter(t => t.length > 0);
 
+      // Validate required fields
+      if (!formData.title.trim() && !formData.name.trim()) {
+        setError("Title or Name is required");
+        setLoading(false);
+        return;
+      }
+
       // Create profile via API
+      // Use title for slug generation, but send name for display
+      // If title is provided, use it for slug; otherwise use name
+      const slugSource = formData.title.trim() || formData.name;
+      
       await createProfile({
         name: formData.name,
+        title: formData.title.trim() || undefined,
         gender: formData.gender,
         age: formData.age || undefined,
         country: formData.country || undefined,
@@ -51,6 +64,8 @@ export default function SubmitProfilePage() {
         discord_username: formData.discord_username || undefined,
         tags: tags.length > 0 ? tags : undefined,
         images: selectedImages.length > 0 ? selectedImages : [],
+        // Pass slug source for URL generation
+        _slugSource: slugSource,
       });
 
       // Show success message
@@ -59,6 +74,7 @@ export default function SubmitProfilePage() {
       // Reset form
       setFormData({
         name: "",
+        title: "",
         gender: "",
         age: "",
         country: "",
@@ -269,6 +285,16 @@ export default function SubmitProfilePage() {
               </FormField>
             </div>
           </div>
+
+          <FormField label="PROFILE TITLE" required>
+            <Input 
+              placeholder="Enter a title for your profile (used for URL)" 
+              required 
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            />
+            <p className="text-xs text-gray-500 mt-2">This title will be used to generate your profile URL.</p>
+          </FormField>
 
           <FormField label="SHORT DESCRIPTION" required>
             <Textarea 

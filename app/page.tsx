@@ -14,8 +14,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // Handle hash navigation on page load
-    if (window.location.hash === '#search-bar') {
+    // Handle hash navigation on page load (only on client)
+    if (typeof window !== "undefined" && window.location.hash === '#search-bar') {
       setTimeout(() => {
         document.getElementById('search-bar')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
@@ -30,8 +30,8 @@ export default function HomePage() {
       } catch (error: any) {
         console.error("Error loading profiles:", error);
         // Show user-friendly error message
-        if (error.message?.includes("Cannot connect to backend")) {
-          console.warn("Backend connection failed. Make sure backend server is running.");
+        if (error.message?.includes("Cannot connect to backend") || error.message?.includes("Failed to fetch")) {
+          console.warn("Backend connection failed. The API might be unavailable.");
         }
         // Set empty array on error so UI doesn't break
         setProfiles([]);
@@ -82,10 +82,10 @@ export default function HomePage() {
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white text-center mb-3 sm:mb-4 drop-shadow-lg">
-            Connect with Like-Minded People
+            Trade Nudes and Hookups Finder
           </h1>
           <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 text-center mb-6 sm:mb-8 drop-shadow-md px-2">
-            Find Sexting Usernames for Telegram, Kik, and More
+            Find Traders Nudes and Real Girls and Boys to Trade nudes on Telegram and Discord
           </p>
 
           {/* Search Bar with By Country Button */}

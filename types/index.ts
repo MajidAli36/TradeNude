@@ -3,6 +3,7 @@ export interface Profile {
   id: string;
   slug: string;
   name: string;
+  title?: string; // Profile title used for URL generation
   gender: "girl" | "boy";
   age?: number;
   country?: string;

@@ -9,6 +9,7 @@ function mapRowToProfile(row: any): Profile {
     id: row.id,
     slug: row.slug,
     name: row.name,
+    title: row.title ?? undefined,
     gender: row.gender,
     age: row.age ?? undefined,
     country: row.country ?? undefined,
@@ -21,6 +22,9 @@ function mapRowToProfile(row: any): Profile {
     createdAt: row.createdAt ?? row.created_at ?? new Date().toISOString(),
     status: row.status as Status,
     email: row.email ?? undefined,
+    telegram_username: row.telegram_username ?? undefined,
+    discord_username: row.discord_username ?? undefined,
+    tags: row.tags ?? undefined,
   };
 }
 
@@ -78,11 +82,14 @@ export async function createProfileFromFormData(
   formData: FormData
 ): Promise<Profile> {
   const name = String(formData.get("name") || "").trim();
+  const title = String(formData.get("title") || "").trim();
   const gender = String(formData.get("gender") || "").trim() as
     | "girl"
     | "boy";
   const city = String(formData.get("city") || "").trim();
   const description = String(formData.get("description") || "").trim();
+  // Get slug source - use title if provided, otherwise use name
+  const slugSource = String(formData.get("_slugSource") || title || name).trim();
   const ageValue = formData.get("age");
   const country = String(formData.get("country") || "").trim() || undefined;
   const email = String(formData.get("email") || "").trim() || undefined;
@@ -110,6 +117,11 @@ export async function createProfileFromFormData(
 
   if (!name || !gender || !city || !description) {
     throw new Error("Missing required fields");
+  }
+  
+  // Title is required if provided, but we'll use name as fallback
+  if (!title && !name) {
+    throw new Error("Name or Title is required");
   }
 
   const age =
@@ -172,27 +184,36 @@ export async function createProfileFromFormData(
   }
 
   const now = new Date().toISOString();
-  const slug = await generateUniqueSlug(name);
+  // Use slugSource (title if provided, otherwise name) for URL generation
+  const slug = await generateUniqueSlug(slugSource);
   const supabase = getSupabaseClient();
+
+  // Build insert object - include title if provided
+  const insertData: any = {
+    slug,
+    name,
+    gender,
+    age,
+    country,
+    city,
+    description,
+    email,
+    telegram_username,
+    discord_username,
+    tags,
+    images,
+    status: "pending",
+    created_at: now,
+  };
+  
+  // Add title if provided (column may not exist yet if migration not run)
+  if (title && title.trim()) {
+    insertData.title = title.trim();
+  }
 
   const { data, error } = await supabase
     .from("profiles")
-    .insert({
-      slug,
-      name,
-      gender,
-      age,
-      country,
-      city,
-      description,
-      email,
-      telegram_username,
-      discord_username,
-      tags,
-      images,
-      status: "pending",
-      created_at: now,
-    })
+    .insert(insertData)
     .select("*")
     .single();
 
